@@ -1,0 +1,5 @@
+name: 'TP-Link'
+packageKey: 'tplink.bcandersen'
+permissions:
+  lan: {}
+  discovery: {}

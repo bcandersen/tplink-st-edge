@@ -1,2 +1,2 @@
-# TP-Link-SmartThings-Edge
-TP-Link Driver For SmartThings Edge Platform
+# TP-Link SmartThing Edge
+TP-Link driver for the SmartThings Edge platform

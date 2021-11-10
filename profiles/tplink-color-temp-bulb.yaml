@@ -1,0 +1,13 @@
+name: tplink.ct.blub.v1
+components:
+- id: main
+  capabilities:
+  - id: switch
+    version: 1
+  - id: switchLevel
+    version: 1
+  # TP-Link supports kel range of 2500-9000. This limit need to be reflected in presentation
+  - id: colorTemperature
+    version: 1
+  categories:
+  - name: Light
