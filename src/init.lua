@@ -75,6 +75,11 @@ local function update_state(driver, device)
         event_handlers.handle_hue_event(driver, device, tplink_obj.state.hue, false)
         event_handlers.handle_saturation_event(driver, device, tplink_obj.state.sat, false)
       end
+    elseif tplink_obj.is_switch() then
+      if tplink_obj.is_energy_meter then -- TODO: do bulbs have energy meters?
+        event_handlers.handle_energy_event(driver, device, tplink_obj.state.energy, false)
+        event_handlers.handle_power_event(driver, device, tplink_obj.state.power, false)
+      end
     end
   else
     log.debug("No tplink_obj found for device")

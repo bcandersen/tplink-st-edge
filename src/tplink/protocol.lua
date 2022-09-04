@@ -33,6 +33,9 @@ local function decrypt(data, protocol)
     dec_buf = dec_buf .. string.char(a)
   end
 
+  -- TODO: Will this much trace logging cause too much stress on the driver?
+  log.trace("Decrypted response: " .. dec_buf)
+
   return dec_buf
 end
 

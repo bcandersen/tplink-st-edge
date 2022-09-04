@@ -13,7 +13,7 @@ local Switch = {}
 Switch.__index = Switch
 
 Switch._init = function(cls, id, alias, model, type, ipv4, port, is_energy_meter, is_dimmable)
-  local state = {on_off = 0, bri = 0}
+  local state = {on_off = 0, bri = 0, power = 0, energy = 0} -- power is in mW, energy is in Wh
   local switch = {
     id = id,
     alias = alias,
@@ -106,7 +106,6 @@ function Switch:get_state(timeout)
 
   local obj, pos, decode_err = json.decode(resp)
   if obj then
-    -- TODO: parse out emeter get_realtime and add to state for energy meter devices
     local get_sysinfo = utilities.get_get_sysinfo(obj)
     if get_sysinfo then
       if get_sysinfo.relay_state then
@@ -118,6 +117,25 @@ function Switch:get_state(timeout)
       end
     else
       return nil, "Failed to parse get_sysinfo"
+    end
+
+    if self.is_energy_meter then
+      local get_realtime = utilities.get_get_realtime(obj)
+      if get_realtime then
+        if get_realtime.power_mw then
+          self.state.power = get_realtime.power_mw
+        elseif get_realtime.power then
+          self.state.power = get_realtime.power*1000 -- old proto version sends in W
+        end
+
+        if get_realtime.total_wh then
+          self.state.energy = get_realtime.total_wh
+        elseif get_realtime.total then
+          self.state.energy = get_realtime.total*1000 -- old proto version sends in kWh
+        end
+      else
+        return nil, "Failed to parse get_realtime"
+      end
     end
   else
     return nil, "Failed to parse response: " .. decode_err

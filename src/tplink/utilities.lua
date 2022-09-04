@@ -9,6 +9,14 @@ local function get_get_sysinfo(dec_data)
   return nil
 end
 
+local function get_get_realtime(dec_data)
+  if dec_data and dec_data.system then
+    return dec_data.emeter.get_realtime
+  end
+
+  return nil
+end
+
 -- {system: {get_sysinfo: {light_state: {...}, ...}, ...}, ...}}
 local function get_light_state(dec_data)
   local get_sysinfo = get_get_sysinfo(dec_data)
@@ -116,6 +124,7 @@ return {
   get_model = get_model,
   get_alias = get_alias,
   get_get_sysinfo = get_get_sysinfo,
+  get_get_realtime = get_get_realtime,
   get_light_state = get_light_state,
   get_children = get_children,
   is_dimmable = is_dimmable,
