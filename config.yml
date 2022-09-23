@@ -1,5 +1,5 @@
-name: 'TP-Link Beta'
-packageKey: 'tplink.beta.bcandersen'
+name: 'TP-Link'
+packageKey: 'tplink.bcandersen'
 permissions:
   lan: {}
   discovery: {}
