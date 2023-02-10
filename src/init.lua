@@ -60,25 +60,28 @@ local function discover(driver, discovery_active)
   )
 end
 
-local function update_state(driver, device)
+local function update_state(driver, device, force)
   local tplink_obj = device:get_field(FIELDS.TPLINK_OBJECT)
   if tplink_obj then
-    event_handlers.handle_switch_event(driver, device, tplink_obj.state.on_off == 1 and true or false, false)
+    event_handlers.handle_switch_event(driver, device, tplink_obj.state.on_off == 1 and true or false, force)
     if tplink_obj.is_bulb() then
       if tplink_obj.is_dimmable then
-        event_handlers.handle_level_event(driver, device, tplink_obj.state.bri, false)
+        event_handlers.handle_level_event(driver, device, tplink_obj.state.bri, force)
       end
       if tplink_obj.is_color_temp then
-        event_handlers.handle_colortemp_event(driver, device, tplink_obj.state.kel, false)
+        event_handlers.handle_colortemp_event(driver, device, tplink_obj.state.kel, force)
       end
       if tplink_obj.is_color then
-        event_handlers.handle_hue_event(driver, device, tplink_obj.state.hue, false)
-        event_handlers.handle_saturation_event(driver, device, tplink_obj.state.sat, false)
+        event_handlers.handle_hue_event(driver, device, tplink_obj.state.hue, force)
+        event_handlers.handle_saturation_event(driver, device, tplink_obj.state.sat, force)
       end
     elseif tplink_obj.is_switch() then
+      if tplink_obj.is_dimmable then
+        event_handlers.handle_level_event(driver, device, tplink_obj.state.bri, force)
+      end
       if tplink_obj.is_energy_meter then -- TODO: do bulbs have energy meters?
-        event_handlers.handle_energy_event(driver, device, tplink_obj.state.energy, false)
-        event_handlers.handle_power_event(driver, device, tplink_obj.state.power, false)
+        event_handlers.handle_energy_event(driver, device, tplink_obj.state.energy, force)
+        event_handlers.handle_power_event(driver, device, tplink_obj.state.power, force)
       end
     end
   else
@@ -94,6 +97,7 @@ local function start_poll(device)
   end
 
   device:set_field(FIELDS.POLL_TIMEOUTS, 0)
+  device:set_field(FIELDS.NEEDS_SYNC, true)
 
   local poll_devices = function()
     local online = device:get_field(FIELDS.ONLINE)
@@ -109,7 +113,13 @@ local function start_poll(device)
           device:set_field(FIELDS.ONLINE, true)
           device:online()
         end
-        update_state(driver, device)
+        if device:get_field(FIELDS.NEEDS_SYNC) then
+          log.info("[" .. device.id .. "] Syncing state for device: " .. device.label)
+          update_state(driver, device, true)
+          device:set_field(FIELDS.NEEDS_SYNC, false)
+        else
+          update_state(driver, device, false)
+        end
       else
         log.debug(
           'Error polling device "' ..
